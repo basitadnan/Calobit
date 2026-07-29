@@ -1,0 +1,6 @@
+{
+  "appId": "com.calorie.tracker",
+  "appName": "Calorie Tracker",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
