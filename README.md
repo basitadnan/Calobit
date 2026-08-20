@@ -7,7 +7,7 @@
 [![Live](https://img.shields.io/badge/live-Calobit.vercel.app-2E7D32?style=flat-square)](https://Calobit.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?style=flat-square&logo=capacitor&logoColor=white)](https://capacitorjs.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
+[![License: Attribution-NonCommercial](https://img.shields.io/badge/License-Attribution--NonCommercial-orange.svg?style=flat-square)](./LICENSE)
 
 [Live Demo](https://Calobit.vercel.app) · [Report a Bug](#) · [Request a Feature](#)
 
@@ -99,7 +99,7 @@ Contributions are welcome. Please open an issue to discuss significant changes b
 
 ## License
 
-Distributed under the MIT License. See [`LICENSE`](./LICENSE) for details.
+Distributed under an Attribution-NonCommercial license. You're free to use, modify, and share this code — with credit to the original author — but it may not be sold or used commercially without permission. See [`LICENSE`](./LICENSE) for full terms.
 
 <br>
 
