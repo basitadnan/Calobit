@@ -2,11 +2,12 @@
 
 # Calobit
 
-**Calorie tracking that doesn't get in your way.**
+**Track calories, macros, and movement — offline or AI-powered, your choice.**
 
 [![Live](https://img.shields.io/badge/live-Calobit.vercel.app-2E7D32?style=flat-square)](https://Calobit.vercel.app)
-[![Android](https://img.shields.io/badge/Android-3DDC84?style=flat-square&logo=android&logoColor=white)](#)
-[![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)](#)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?style=flat-square&logo=capacitor&logoColor=white)](https://capacitorjs.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
 
 [Live Demo](https://Calobit.vercel.app) · [Report a Bug](#) · [Request a Feature](#)
 
@@ -16,7 +17,7 @@
 
 ## About
 
-Calobit (formerly CalorieIQ) is an Android calorie and nutrition tracker built for people who want accurate logging without the friction most tracking apps add. Log meals by photo or text and let AI handle the breakdown — no manual macro math, no endless food database scrolling.
+Calobit is a calorie and macro tracker that adapts to how you actually eat and train. Log meals with a local offline database, AI photo/text recognition, or barcode scanning for local products AI and databases don't cover — plus built-in gym and cardio tracking, all in one app.
 
 <br>
 
@@ -24,25 +25,81 @@ Calobit (formerly CalorieIQ) is an Android calorie and nutrition tracker built f
 
 | | |
 |---|---|
-| 📸 **Photo Logging** | Snap a meal, get an instant calorie and macro breakdown |
-| ⌨️ **Text Logging** | Describe what you ate in plain language — Calobit figures out the rest |
-| 🔑 **Bring Your Own Key** | A fully free, local-database tier for users who supply their own AI key |
-| 💳 **Premium Tier** | Metered AI analysis for users who want it built in, no setup required |
-| 📊 **Progress Tracking** | Daily and historical views of intake vs. goals |
+| 🥗 **Full Macro Tracking** | Calories, protein, carbs, and fats — not just a calorie count |
+| 📴 **Offline Local Database** | Log meals fully offline with a free, local, on-device database |
+| 🤖 **AI Logging** | Snap a photo or describe a meal in text — AI handles the breakdown |
+| 📷 **Barcode Scanning** | Scan local/regional products AI and the database don't recognize |
+| 🏋️ **Gym Routine Tracking** | Log and follow workout routines built into the app |
+| 🏃 **Walking/Running Tracker** | Track cardio sessions alongside your nutrition |
 
 <br>
 
 ## Tech Stack
 
-- **Platform:** Android
-- **Landing Page:** Next.js, Tailwind CSS
+- **Framework:** Next.js
+- **Mobile:** Capacitor (Android)
+- **Storage:** Local on-device database (no backend required for core features)
 - **Hosting:** Vercel
 
 <br>
 
-## Status
+## Getting Started
 
-🟢 Actively developed — currently expanding the premium AI-analysis tier alongside the free local version.
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Android Studio (if building the mobile app)
+- An AI provider API key (only needed if you want AI-powered logging — the local database tier works fully offline without one)
+
+### Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/basitadnan/calobit.git
+cd calobit
+
+# Install dependencies
+npm install
+
+# Set up environment variables (only needed for AI features)
+cp .env.example .env.local
+# Fill in your AI provider key
+```
+
+### Running the web app
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000`.
+
+### Building the Android app
+
+```bash
+npx cap sync android
+npx cap open android
+```
+
+Then build and run from Android Studio.
+
+<br>
+
+## Contributing
+
+Contributions are welcome. Please open an issue to discuss significant changes before submitting a pull request.
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes
+4. Push to your branch and open a PR
+
+<br>
+
+## License
+
+Distributed under the MIT License. See [`LICENSE`](./LICENSE) for details.
 
 <br>
 
