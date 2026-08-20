@@ -1,6 +1,6 @@
 {
-  "name": "CalorieIQ & GymIQ",
-  "short_name": "CalorieIQ",
+  "name": "CaloBit",
+  "short_name": "CaloBit",
   "description": "AI-Powered Nutrition & Gym Routine Tracker",
   "start_url": "/",
   "display": "standalone",

@@ -55,6 +55,20 @@ export function calculateGoals(profile) {
   };
 }
 
+/**
+ * Scale a per-100g food item to a portion size in grams.
+ * Returns calories/protein/carbs/fat for `grams` of the food.
+ */
+export function scaleFoodNutrition(food, grams) {
+  const factor = (grams || 0) / 100;
+  return {
+    calories: Math.round((food.caloriesPer100g || 0) * factor),
+    protein: Math.round((food.proteinPer100g || 0) * factor * 10) / 10,
+    carbs: Math.round((food.carbsPer100g || 0) * factor * 10) / 10,
+    fat: Math.round((food.fatPer100g || 0) * factor * 10) / 10,
+  };
+}
+
 export function sumMacros(meals) {
   return meals.reduce((acc, m) => ({
     calories: acc.calories + (m.calories || 0),

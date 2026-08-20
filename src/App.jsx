@@ -6,10 +6,11 @@ import Insights from './components/Insights';
 import Settings from './components/Settings';
 import Gym from './components/Gym';
 import BottomNav from './components/BottomNav';
+import AddFoodFlow from './components/AddFoodFlow';
 import Auth from './components/Auth';
 
 function App() {
-  const { onboarded, currentTab, currentUser } = useApp();
+  const { onboarded, currentTab, currentUser, addFlow } = useApp();
 
   if (!currentUser) {
     return <Auth />;
@@ -32,6 +33,7 @@ function App() {
     <>
       {renderTab()}
       <BottomNav />
+      {addFlow.open && <AddFoodFlow />}
     </>
   );
 }

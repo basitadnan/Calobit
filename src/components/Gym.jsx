@@ -4,15 +4,12 @@ import GymSetup from './GymSetup';
 import GymRoutine from './GymRoutine';
 import GymProgress from './GymProgress';
 import GymInsights from './GymInsights';
-import { Dumbbell, LineChart, Sparkles } from 'lucide-react';
+import GymWalk from './GymWalk';
+import { Dumbbell, LineChart, Sparkles, Footprints } from 'lucide-react';
 
 export default function Gym() {
   const { gymOnboarded } = useApp();
-  const [subTab, setSubTab] = useState('routine');
-
-  if (!gymOnboarded) {
-    return <GymSetup />;
-  }
+  const [subTab, setSubTab] = useState(gymOnboarded ? 'routine' : 'walk');
 
   return (
     <div className="page fade-in" style={{ paddingBottom: 100 }}>
@@ -36,11 +33,24 @@ export default function Gym() {
         >
           <Sparkles size={16} /> Insights
         </button>
+        <button 
+          className={`pill-tab ${subTab === 'walk' ? 'active' : ''}`} 
+          onClick={() => setSubTab('walk')}
+        >
+          <Footprints size={16} /> Walk/Run
+        </button>
       </div>
 
-      {subTab === 'routine' && <GymRoutine />}
-      {subTab === 'progress' && <GymProgress />}
-      {subTab === 'insights' && <GymInsights />}
+      {!gymOnboarded && subTab !== 'walk' ? (
+        <GymSetup />
+      ) : (
+        <>
+          {subTab === 'routine' && <GymRoutine />}
+          {subTab === 'progress' && <GymProgress />}
+          {subTab === 'insights' && <GymInsights />}
+          {subTab === 'walk' && <GymWalk />}
+        </>
+      )}
     </div>
   );
 }

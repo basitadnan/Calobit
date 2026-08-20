@@ -51,7 +51,7 @@ export default function Auth() {
   return (
     <div className="page fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#F9FAFB', color: '#1A1A1A', padding: 20 }}>
       <div className="card" style={{ width: '100%', maxWidth: 400, padding: 30, background: '#fff', border: '1px solid #E5E7EB', borderRadius: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-        <img src="/logo.png" alt="CalorieIQ Logo" style={{ width: 70, height: 70, objectFit: 'contain', margin: '0 auto 20px', display: 'block', borderRadius: 16 }} />
+        <img src="/logo.png" alt="CaloBit Logo" style={{ width: 70, height: 70, objectFit: 'contain', margin: '0 auto 20px', display: 'block', borderRadius: 16 }} />
         
         {isSignUp ? (
           <>
@@ -114,7 +114,7 @@ export default function Auth() {
           </>
         ) : (
           <>
-            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8, color: '#1A1A1A', textAlign: 'center' }}>Welcome to CalorieIQ</h2>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8, color: '#1A1A1A', textAlign: 'center' }}>Welcome to CaloBit</h2>
             <p style={{ color: '#6B7280', fontSize: 13, marginBottom: 24, textAlign: 'center' }}>Sign in to your private profile to continue.</p>
             
             <form onSubmit={handleLogin} style={{ display: 'grid', gap: 16 }}>

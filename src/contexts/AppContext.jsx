@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as storage from '../utils/storage';
 import { calculateGoals, sumMacros } from '../utils/calculations';
-import { seedFoodDatabase } from '../utils/foods';
 
 const AppContext = createContext();
 
@@ -18,13 +17,26 @@ export function AppProvider({ children }) {
   const [gymOnboarded, setGymOnboardedState] = useState(false);
   const [routine, setRoutine] = useState({});
   const [workoutLogs, setWorkoutLogs] = useState([]);
+  const [walkLogs, setWalkLogs] = useState([]);
   const [currentUser, setCurrentUser] = useState(storage.getActiveUser());
 
   const dateStr = storage.getDateStr(selectedDate);
   const todayStr = storage.getDateStr();
 
+  // Add Food flow (center "+" button): mode is null (chooser), 'db', or 'ai'
+  const [addFlow, setAddFlow] = useState({ open: false, mode: null, mealType: 'breakfast' });
+  const openAddFood = useCallback(({ mode = null, mealType = 'breakfast' } = {}) => {
+    setAddFlow({ open: true, mode, mealType });
+  }, []);
+  const closeAddFood = useCallback(() => {
+    setAddFlow({ open: false, mode: null, mealType: 'breakfast' });
+  }, []);
+
+
   useEffect(() => {
-    seedFoodDatabase().catch(err => console.error("Error seeding food db:", err));
+    if (typeof window !== 'undefined' && window.indexedDB) {
+      try { window.indexedDB.deleteDatabase('CalorieTrackerDB'); } catch (e) {}
+    }
   }, []);
 
   useEffect(() => {
@@ -43,6 +55,7 @@ export function AppProvider({ children }) {
     setGymOnboardedState(storage.isGymOnboarded());
     setRoutine(storage.getGymRoutine());
     setWorkoutLogs(storage.getWorkoutLogs());
+    setWalkLogs(storage.getWalkLogs());
   }, [currentUser]);
 
   useEffect(() => {
@@ -110,6 +123,11 @@ export function AppProvider({ children }) {
     setWorkoutLogs(updated);
   }, []);
 
+  const logWalk = useCallback((log) => {
+    const updated = storage.saveWalkLog(log);
+    setWalkLogs(updated);
+  }, []);
+
   const login = useCallback((username, password) => {
     const user = storage.authenticateUser(username, password);
     if (user) {
@@ -157,8 +175,10 @@ export function AppProvider({ children }) {
       goals, updateGoals, totals, remaining,
       settings, updateSettings,
       currentTab, setCurrentTab,
+      addFlow, openAddFood, closeAddFood,
       selectedDate, setSelectedDate, dateStr,
       gymOnboarded, completeGymOnboarding, routine, saveRoutine, workoutLogs, logWorkout,
+      walkLogs, logWalk,
       currentUser, login, register, logout,
     }}>
       {children}

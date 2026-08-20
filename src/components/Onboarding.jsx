@@ -74,8 +74,8 @@ export default function Onboarding() {
     <div className="onboarding">
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-        <img src="/logo.png" alt="CalorieIQ" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8 }} />
-        <span style={{ fontWeight: 700, fontSize: 20 }}>CalorieIQ</span>
+        <img src="/logo.png" alt="CaloBit" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8 }} />
+        <span style={{ fontWeight: 700, fontSize: 20 }}>CaloBit</span>
       </div>
 
       {/* Progress */}
@@ -125,7 +125,7 @@ export default function Onboarding() {
               <input className="input-field" type="number" placeholder="25" value={form.age} onChange={e => update('age', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Biological Sex</label>
+              <label>Gender</label>
               <div className="toggle-group">
                 <button className={`toggle-opt ${form.sex === 'male' ? 'active' : ''}`} onClick={() => update('sex', 'male')}>Male</button>
                 <button className={`toggle-opt ${form.sex === 'female' ? 'active' : ''}`} onClick={() => update('sex', 'female')}>Female</button>

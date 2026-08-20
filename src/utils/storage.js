@@ -1,6 +1,6 @@
 const KEYS = {
-  USERS: 'calorieiq_users',
-  CURRENT_USER: 'calorieiq_current_user',
+  USERS: 'calobit_users',
+  CURRENT_USER: 'calobit_current_user',
   
   // Scoped keys
   PROFILE: 'profile',
@@ -12,6 +12,7 @@ const KEYS = {
   GYM_ROUTINE: 'gym_routine',
   WORKOUT_LOGS: 'workout_logs',
   GYM_ONBOARDED: 'gym_onboarded',
+  WALK_LOGS: 'walk_logs',
 };
 
 export function getActiveUser() {
@@ -23,16 +24,16 @@ function getScopedKey(key) {
     return key;
   }
   const username = getActiveUser();
-  return username ? `calorieiq_${username}_${key}` : `calorieiq_${key}`;
+  return username ? `calobit_${username}_${key}` : `calobit_${key}`;
 }
 
 export function migrateLegacyData(username) {
-  const keysToMigrate = ['profile', 'onboarded', 'meals', 'water', 'templates', 'settings', 'gym_routine', 'workout_logs', 'gym_onboarded'];
+  const keysToMigrate = ['profile', 'onboarded', 'meals', 'water', 'templates', 'settings', 'gym_routine', 'workout_logs', 'gym_onboarded', 'walk_logs'];
   keysToMigrate.forEach(key => {
-    const legacyVal = localStorage.getItem(`calorieiq_${key}`);
+    const legacyVal = localStorage.getItem(`calobit_${key}`);
     if (legacyVal !== null) {
-      localStorage.setItem(`calorieiq_${username}_${key}`, legacyVal);
-      localStorage.removeItem(`calorieiq_${key}`);
+      localStorage.setItem(`calobit_${username}_${key}`, legacyVal);
+      localStorage.removeItem(`calobit_${key}`);
     }
   });
 }
@@ -162,6 +163,16 @@ export function saveWorkoutLog(log) {
   return logs;
 }
 
+export function getWalkLogs() {
+  try { return JSON.parse(localStorage.getItem(getScopedKey(KEYS.WALK_LOGS))) || []; } catch { return []; }
+}
+export function saveWalkLog(log) {
+  const logs = getWalkLogs();
+  logs.push({ ...log, id: Date.now().toString(), timestamp: new Date().toISOString() });
+  localStorage.setItem(getScopedKey(KEYS.WALK_LOGS), JSON.stringify(logs));
+  return logs;
+}
+
 export function isGymOnboarded() {
   return localStorage.getItem(getScopedKey(KEYS.GYM_ONBOARDED)) === 'true';
 }
@@ -173,7 +184,7 @@ export function resetAll() {
   // Scoped reset
   const username = getActiveUser();
   if (username) {
-    const scopedPrefix = `calorieiq_${username}_`;
+    const scopedPrefix = `calobit_${username}_`;
     Object.keys(localStorage).forEach(k => {
       if (k.startsWith(scopedPrefix)) {
         localStorage.removeItem(k);

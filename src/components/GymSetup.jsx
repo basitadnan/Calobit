@@ -80,7 +80,7 @@ export default function GymSetup() {
         <div style={{ width: 56, height: 56, background: '#C6F135', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
           <Dumbbell size={28} color="#1A1A1A" />
         </div>
-        <h1 style={{ fontSize: 22, fontWeight: 800 }}>GymIQ Setup</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 800 }}>Workout Setup</h1>
         <p style={{ color: '#6B7280', fontSize: 14 }}>Build your weekly workout split</p>
       </div>
 

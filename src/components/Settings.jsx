@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { calculateGoals } from '../utils/calculations';
 import { getTemplates, saveTemplate, deleteTemplate, resetAll } from '../utils/storage';
-import { User, Calculator, Trash2, RotateCcw, Plus, X } from 'lucide-react';
+import { getUserApiKey, saveGeminiApiKey, getFreeUsesLeft } from '../utils/gemini';
+import { User, Calculator, Trash2, RotateCcw, Plus, X, Key, Check, MapPin } from 'lucide-react';
 
 export default function Settings() {
   const { profile, setProfile, goals, updateGoals, settings, updateSettings, currentUser, logout } = useApp();
@@ -83,7 +84,7 @@ export default function Settings() {
             <input className="input-field" type="number" value={editProfile.age} onChange={e => setEditProfile(p => ({ ...p, age: e.target.value }))} />
           </div>
           <div className="form-group">
-            <label>Sex</label>
+            <label>Gender</label>
             <div className="toggle-group">
               <button className={`toggle-opt ${editProfile.sex === 'male' ? 'active' : ''}`} onClick={() => setEditProfile(p => ({ ...p, sex: 'male' }))}>Male</button>
               <button className={`toggle-opt ${editProfile.sex === 'female' ? 'active' : ''}`} onClick={() => setEditProfile(p => ({ ...p, sex: 'female' }))}>Female</button>
@@ -133,6 +134,21 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Offline map note */}
+      <div className="settings-group">
+        <h3>
+          <MapPin size={18} style={{ verticalAlign: 'text-bottom', marginRight: 6 }} /> Map Tiles
+        </h3>
+        <p style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>
+          Map view works offline for areas you've previously visited with an internet connection.
+          Tiles you view online are saved on your phone (up to 100&nbsp;MB) and reused next time —
+          outside that, the route is shown without the map.
+        </p>
+      </div>
+
+      {/* Gemini AI API Key */}
+      <GeminiApiKeyCard />
+
       {/* Meal Templates */}
       <div className="settings-group">
         <h3>Meal Templates</h3>
@@ -175,3 +191,51 @@ export default function Settings() {
     </div>
   );
 }
+
+function GeminiApiKeyCard() {
+  const [apiKey, setApiKey] = useState(() => getUserApiKey());
+  const [saved, setSaved] = useState(false);
+  const freeLeft = getFreeUsesLeft();
+
+  const handleSave = () => {
+    saveGeminiApiKey(apiKey);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="settings-group">
+      <h3>
+        <Key size={18} style={{ verticalAlign: 'text-bottom', marginRight: 6 }} /> Gemini AI
+      </h3>
+      <p style={{ fontSize: 12, color: '#6B7280', marginBottom: 10 }}>
+        AI search & photo nutrition reading work out of the box —{' '}
+        <b>{freeLeft > 0 ? `${freeLeft} free AI actions left this month` : 'no free AI actions left this month'}</b>.
+        Adding your own free key gives you unlimited AI.
+      </p>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          className="input-field"
+          type="password"
+          placeholder="AIzaSy..."
+          value={apiKey}
+          onChange={e => setApiKey(e.target.value)}
+          style={{ flex: 1 }}
+        />
+        <button className="btn-primary" onClick={handleSave} style={{ width: 'auto', padding: '0 16px', gap: 6 }}>
+          {saved ? <Check size={16} /> : null}
+          {saved ? 'Saved' : 'Save Key'}
+        </button>
+      </div>
+      <a
+        href="https://aistudio.google.com/app/apikey"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: 'inline-block', marginTop: 10, fontSize: 13, color: '#88a31e', fontWeight: 700 }}
+      >
+        Get a free API key →
+      </a>
+    </div>
+  );
+}
+

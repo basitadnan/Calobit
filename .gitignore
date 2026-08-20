@@ -1,0 +1,3 @@
+# Android signing (NEVER commit)
+android/calobit-release.keystore
+android/keystore.properties
