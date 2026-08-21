@@ -1,60 +1,40 @@
 const STORAGE_KEY = 'calobit_gemini_api_key';
-const USAGE_KEY = 'calobit_ai_usage';
-const FREE_MONTHLY_USES = 15;
 
-export const AI_QUOTA_MSG =
-  "You've used this month's 15 free AI actions. Add your own free Gemini key in Settings (takes 2 minutes) to keep using AI, or wait until next month.";
+export const AI_KEY_REQUIRED_MSG =
+  'To use AI features, add your own free Gemini key in Settings — it takes about 2 minutes.';
 const AI_RATE_MSG =
-  'Free AI is temporarily rate-limited. Try again in a little while, or add your own free Gemini key in Settings for unlimited AI.';
+  'The AI service is temporarily rate-limited. Try again in a little while.';
 
-function currentMonth() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+// Google sometimes echoes the offending key back inside its error message
+// (e.g. "Permission denied: Consumer 'api_key:…' has been suspended"). Never
+// let that reach the user — redact any key-shaped string from surfaced errors.
+const GEMINI_KEY_RE = /\bAIza[0-9A-Za-z_-]{35}\b/g;
+
+function sanitizeError(msg, apiKey = '') {
+  let out = String(msg);
+  if (apiKey) {
+    out = out.split(apiKey).join('[REDACTED]');
+    out = out.split(encodeURIComponent(apiKey)).join('[REDACTED]');
+  }
+  return out.replace(GEMINI_KEY_RE, '[REDACTED]');
 }
 
-function getDevUsage() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(USAGE_KEY) || 'null');
-    if (raw && raw.month === currentMonth()) return Number(raw.count) || 0;
-  } catch {}
-  return 0;
-}
-
-/** Free shared-key AI actions remaining this month. Honor-system count. */
-export function getFreeUsesLeft() {
-  return Math.max(0, FREE_MONTHLY_USES - getDevUsage());
-}
-
-function recordDevUse() {
-  localStorage.setItem(USAGE_KEY, JSON.stringify({ month: currentMonth(), count: getDevUsage() + 1 }));
-}
-
-/** The user's own key saved in Settings — never the shared one. */
+/** The user's own key saved in Settings. */
 export function getUserApiKey() {
   const customKey = localStorage.getItem(STORAGE_KEY);
   return customKey && customKey.trim().length > 0 ? customKey.trim() : '';
 }
 
 /**
- * Which key to send to Google for a call: the user's own key always wins;
- * otherwise the shared key is used while the free monthly allowance lasts.
+ * Which key to send to Google for a call: always the user's own key from
+ * Settings. There is no bundled/shared key — nothing is baked into the app.
  */
 function resolveApiKey(override = null) {
-  const userKey = override || getUserApiKey();
-  if (userKey) return { apiKey: userKey, shared: false };
-  if (getFreeUsesLeft() > 0) {
-    const shared = import.meta.env.VITE_GEMINI_API_KEY || '';
-    if (shared) return { apiKey: shared, shared: true };
-  }
-  return { apiKey: '', shared: true };
+  return { apiKey: override || getUserApiKey() };
 }
 
 export function getGeminiApiKey() {
-  const customKey = localStorage.getItem(STORAGE_KEY);
-  if (customKey && customKey.trim().length > 0) {
-    return customKey.trim();
-  }
-  return import.meta.env.VITE_GEMINI_API_KEY || '';
+  return getUserApiKey();
 }
 
 export function saveGeminiApiKey(key) {
@@ -66,9 +46,9 @@ export function saveGeminiApiKey(key) {
 }
 
 async function callGeminiAPI(prompt, systemInstruction = '', apiKeyOverride = null) {
-  const { apiKey, shared: usingSharedKey } = resolveApiKey(apiKeyOverride);
+  const { apiKey } = resolveApiKey(apiKeyOverride);
   if (!apiKey) {
-    throw new Error(AI_QUOTA_MSG);
+    throw new Error(AI_KEY_REQUIRED_MSG);
   }
 
   // gemini-2.5-flash — fast and included in the free tier of a personal key.
@@ -103,7 +83,7 @@ async function callGeminiAPI(prompt, systemInstruction = '', apiKeyOverride = nu
         msg = errJson.error.message;
       }
     } catch {}
-    throw new Error(msg);
+    throw new Error(sanitizeError(msg, apiKey));
   }
 
   const data = await response.json();
@@ -112,7 +92,6 @@ async function callGeminiAPI(prompt, systemInstruction = '', apiKeyOverride = nu
     throw new Error('No content returned from Gemini AI.');
   }
 
-  if (usingSharedKey) recordDevUse();
   return JSON.parse(rawText);
 }
 
@@ -172,9 +151,9 @@ Return a JSON object strictly matching this format:
  * When the label shows per-serving values, the AI converts them to per 100g.
  */
 export async function parseNutritionPanel(base64Image, mimeType = 'image/jpeg') {
-  const { apiKey, shared: usingSharedKey } = resolveApiKey();
+  const { apiKey } = resolveApiKey();
   if (!apiKey) {
-    throw new Error(AI_QUOTA_MSG);
+    throw new Error(AI_KEY_REQUIRED_MSG);
   }
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
@@ -225,7 +204,7 @@ If a value is not visible, use 0. Only return the JSON object.`;
         msg = errJson.error.message;
       }
     } catch {}
-    throw new Error(msg);
+    throw new Error(sanitizeError(msg, apiKey));
   }
 
   const data = await response.json();
@@ -235,7 +214,6 @@ If a value is not visible, use 0. Only return the JSON object.`;
   }
 
   const parsed = JSON.parse(rawText);
-  if (usingSharedKey) recordDevUse();
   const round1 = (v) => Math.round((Number(v) || 0) * 10) / 10;
   return {
     name: parsed.name || 'Scanned food',

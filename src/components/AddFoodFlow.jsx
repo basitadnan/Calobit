@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { searchLocalFoods, FOODS } from '../utils/foods';
-import { parseMealAI, parseNutritionPanel, getUserApiKey, getFreeUsesLeft } from '../utils/gemini';
+import { parseMealAI, parseNutritionPanel, getUserApiKey } from '../utils/gemini';
 import { BarcodeScanner, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 import { Camera, CameraSource, CameraResultType } from '@capacitor/camera';
 import { normalizeBarcode, lookupProduct } from '../utils/barcode';
@@ -52,8 +52,8 @@ export default function AddFoodFlow() {
   const [scanSource, setScanSource] = useState('');     // 'cache' | 'off' | 'photo' | 'manual'
   const [manualOpen, setManualOpen] = useState(false);
   const [manualForm, setManualForm] = useState({ name: '', calories: '', protein: '', carbs: '', fat: '' });
-  // AI features are usable via the shared key (free monthly allowance) or the user's own key.
-  const hasGeminiKey = !!getUserApiKey() || getFreeUsesLeft() > 0;
+  // AI features use the user's own key from Settings.
+  const hasGeminiKey = !!getUserApiKey();
 
   // Cached scanned products surface in the local DB search too.
   const [dbScanned, setDbScanned] = useState([]);

@@ -7,6 +7,7 @@ import Settings from './components/Settings';
 import Gym from './components/Gym';
 import BottomNav from './components/BottomNav';
 import AddFoodFlow from './components/AddFoodFlow';
+import UpdateBanner from './components/UpdateBanner';
 import Auth from './components/Auth';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
       {renderTab()}
       <BottomNav />
       {addFlow.open && <AddFoodFlow />}
+      <UpdateBanner />
     </>
   );
 }

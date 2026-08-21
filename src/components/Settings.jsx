@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { calculateGoals } from '../utils/calculations';
 import { getTemplates, saveTemplate, deleteTemplate, resetAll } from '../utils/storage';
-import { getUserApiKey, saveGeminiApiKey, getFreeUsesLeft } from '../utils/gemini';
+import { getUserApiKey, saveGeminiApiKey } from '../utils/gemini';
 import { User, Calculator, Trash2, RotateCcw, Plus, X, Key, Check, MapPin } from 'lucide-react';
 
 export default function Settings() {
@@ -195,7 +195,6 @@ export default function Settings() {
 function GeminiApiKeyCard() {
   const [apiKey, setApiKey] = useState(() => getUserApiKey());
   const [saved, setSaved] = useState(false);
-  const freeLeft = getFreeUsesLeft();
 
   const handleSave = () => {
     saveGeminiApiKey(apiKey);
@@ -209,9 +208,8 @@ function GeminiApiKeyCard() {
         <Key size={18} style={{ verticalAlign: 'text-bottom', marginRight: 6 }} /> Gemini AI
       </h3>
       <p style={{ fontSize: 12, color: '#6B7280', marginBottom: 10 }}>
-        AI search & photo nutrition reading work out of the box —{' '}
-        <b>{freeLeft > 0 ? `${freeLeft} free AI actions left this month` : 'no free AI actions left this month'}</b>.
-        Adding your own free key gives you unlimited AI.
+        AI search & photo nutrition reading use your own Gemini key. Get one free
+        in about 2 minutes — it comes with generous daily free limits.
       </p>
       <div style={{ display: 'flex', gap: 8 }}>
         <input
