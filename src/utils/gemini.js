@@ -25,12 +25,8 @@ export function getUserApiKey() {
   return customKey && customKey.trim().length > 0 ? customKey.trim() : '';
 }
 
-/**
- * Which key to send to Google for a call: always the user's own key from
- * Settings. There is no bundled/shared key — nothing is baked into the app.
- */
 function resolveApiKey(override = null) {
-  return { apiKey: override || getUserApiKey() };
+  return override || getUserApiKey();
 }
 
 export function getGeminiApiKey() {
@@ -45,14 +41,69 @@ export function saveGeminiApiKey(key) {
   }
 }
 
+// New API keys (created 2026) no longer have access to the gemini-1.5/2.5
+// aliases — Google answers 404 "no longer available to new users" and points
+// at the newer models. Older keys still work on the old aliases. So we try
+// candidates in order and use the first one the key can reach.
+// gemini-3.5-flash-lite first: 500 requests/day free tier, works on new keys.
+const MODEL_CANDIDATES = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+let workingModel = null;
+
+async function generateContent(apiKey, payload) {
+  const candidates = workingModel
+    ? [workingModel, ...MODEL_CANDIDATES.filter(m => m !== workingModel)]
+    : MODEL_CANDIDATES;
+
+  let sawOverload = false;
+  for (const model of candidates) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    // 404 = this key has no access to this model, 503 = model overloaded.
+    // Either way the next candidate may still work.
+    if (response.status === 404 || response.status === 503) {
+      if (response.status === 503) sawOverload = true;
+      continue;
+    }
+
+    if (!response.ok) {
+      if (response.status === 429) throw new Error(AI_RATE_MSG);
+      const errorText = await response.text();
+      let msg = `Gemini API error (${response.status})`;
+      try {
+        const errJson = JSON.parse(errorText);
+        if (errJson.error?.message) {
+          msg = errJson.error.message;
+        }
+      } catch {}
+      throw new Error(sanitizeError(msg, apiKey));
+    }
+
+    workingModel = model;
+    const data = await response.json();
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+      throw new Error('No content returned from Gemini AI.');
+    }
+    return JSON.parse(rawText);
+  }
+
+  throw new Error(
+    sawOverload
+      ? AI_RATE_MSG
+      : 'No Gemini model is available for this API key. Double-check the key in Settings.'
+  );
+}
+
 async function callGeminiAPI(prompt, systemInstruction = '', apiKeyOverride = null) {
-  const { apiKey } = resolveApiKey(apiKeyOverride);
+  const apiKey = resolveApiKey(apiKeyOverride);
   if (!apiKey) {
     throw new Error(AI_KEY_REQUIRED_MSG);
   }
-
-  // gemini-2.5-flash — fast and included in the free tier of a personal key.
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const payload = {
     contents: [
@@ -67,32 +118,7 @@ async function callGeminiAPI(prompt, systemInstruction = '', apiKeyOverride = nu
     }
   };
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    if (response.status === 429) throw new Error(AI_RATE_MSG);
-    const errorText = await response.text();
-    let msg = `Gemini API error (${response.status})`;
-    try {
-      const errJson = JSON.parse(errorText);
-      if (errJson.error?.message) {
-        msg = errJson.error.message;
-      }
-    } catch {}
-    throw new Error(sanitizeError(msg, apiKey));
-  }
-
-  const data = await response.json();
-  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error('No content returned from Gemini AI.');
-  }
-
-  return JSON.parse(rawText);
+  return await generateContent(apiKey, payload);
 }
 
 /**
@@ -151,12 +177,10 @@ Return a JSON object strictly matching this format:
  * When the label shows per-serving values, the AI converts them to per 100g.
  */
 export async function parseNutritionPanel(base64Image, mimeType = 'image/jpeg') {
-  const { apiKey } = resolveApiKey();
+  const apiKey = resolveApiKey();
   if (!apiKey) {
     throw new Error(AI_KEY_REQUIRED_MSG);
   }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const systemInstruction = `You are a nutrition label OCR expert. The user photographed a packaged food's nutrition facts panel.
 Carefully read the label. Convert anything given per serving to per 100g using the serving size shown on the label.
@@ -188,32 +212,7 @@ If a value is not visible, use 0. Only return the JSON object.`;
     }
   };
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    if (response.status === 429) throw new Error(AI_RATE_MSG);
-    const errorText = await response.text();
-    let msg = `Gemini API error (${response.status})`;
-    try {
-      const errJson = JSON.parse(errorText);
-      if (errJson.error?.message) {
-        msg = errJson.error.message;
-      }
-    } catch {}
-    throw new Error(sanitizeError(msg, apiKey));
-  }
-
-  const data = await response.json();
-  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error('No content returned from Gemini AI.');
-  }
-
-  const parsed = JSON.parse(rawText);
+  const parsed = await generateContent(apiKey, payload);
   const round1 = (v) => Math.round((Number(v) || 0) * 10) / 10;
   return {
     name: parsed.name || 'Scanned food',

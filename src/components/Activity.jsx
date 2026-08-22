@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { getWeekDays, sumMacros } from '../utils/calculations';
 import { getDateStr, getMeals } from '../utils/storage';
@@ -20,13 +20,40 @@ const DAY_NAMES = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 export default function Activity() {
   const { selectedDate, setSelectedDate } = useApp();
   const [weekOffset, setWeekOffset] = useState(0);
+  const weekStripRef = useRef(null);
 
-  const refDate = new Date();
-  refDate.setDate(refDate.getDate() + weekOffset * 7);
-  const weekDays = getWeekDays(refDate);
+  // Show today ± 3 days so today is always the physical middle item.
+  const today = new Date();
+  const weekDays = [];
+  for (let i = -3; i <= 3; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i + weekOffset * 7);
+    weekDays.push(d);
+  }
   const todayStr = getDateStr();
   const selStr = getDateStr(selectedDate);
   const dayMeals = getMeals(selStr);
+
+  // Scroll to center today's day on mount / week change
+  useEffect(() => {
+    if (weekStripRef.current) {
+      requestAnimationFrame(() => {
+        const todayIndex = weekDays.findIndex(d => getDateStr(d) === todayStr);
+        if (todayIndex >= 0) {
+          const items = weekStripRef.current.querySelectorAll('.day-item');
+          const todayEl = items[todayIndex];
+          const container = weekStripRef.current;
+          if (todayEl && container) {
+            const containerRect = container.getBoundingClientRect();
+            const elRect = todayEl.getBoundingClientRect();
+            const containerCenter = containerRect.left + containerRect.width / 2;
+            const elCenter = elRect.left + elRect.width / 2;
+            container.scrollLeft += elCenter - containerCenter;
+          }
+        }
+      });
+    }
+  }, [weekDays, todayStr, weekOffset]);
 
   const mealsByType = {};
   dayMeals.forEach(m => {
@@ -46,17 +73,15 @@ export default function Activity() {
         <button onClick={() => setWeekOffset(w => w - 1)} style={{ background: 'none', padding: 4 }}>
           <ChevronLeft size={20} color="#6B7280" />
         </button>
-        <div className="week-strip" style={{ flex: 1 }}>
+        <div ref={weekStripRef} className="week-strip">
           {weekDays.map((d, i) => {
             const ds = getDateStr(d);
             const isToday = ds === todayStr;
             const isSelected = ds === selStr;
             return (
-              <div key={i} className={`day-item ${isSelected ? 'active' : ''}`} onClick={() => setSelectedDate(new Date(d))}>
+              <div key={i} className={`day-item ${isSelected ? 'active' : ''} ${isToday && !isSelected ? 'today' : ''}`} onClick={() => setSelectedDate(new Date(d))}>
                 <span className="day-label">{DAY_NAMES[d.getDay()]}</span>
-                <div className="day-num" style={isToday && !isSelected ? { border: '2px solid #C6F135' } : {}}>
-                  {d.getDate()}
-                </div>
+                <div className="day-num">{d.getDate()}</div>
               </div>
             );
           })}
